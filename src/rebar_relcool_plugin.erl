@@ -28,6 +28,29 @@
 %% API
 %%============================================================================
 release(Config, _AppFile) ->
+    case new_enough_rebar() of
+        true ->
+            run_on_base_dir(Config);
+        false ->
+            rebar_utils:abort("Rebar version is to old to run the relcool plugin", [])
+    end.
+
+%%============================================================================
+%% Internal Functions
+%%============================================================================
+new_enough_rebar() ->
+    Exports = rebar_utils:module_info(exports),
+    lists:member({processing_base_dir, 1}, Exports).
+
+run_on_base_dir(Config) ->
+    case rebar_utils:processing_base_dir(Config) of
+        true ->
+            check_for_relcool_config(Config);
+        false ->
+            ok
+   end.
+
+check_for_relcool_config(Config) ->
     CurDir = filename:absname(rebar_utils:get_cwd()),
     RelCoolFile = filename:join(CurDir, "relcool.config"),
     case filelib:is_regular(RelCoolFile) of
@@ -37,17 +60,18 @@ release(Config, _AppFile) ->
             ok
     end.
 
-
-%%============================================================================
-%% Internal Functions
-%%============================================================================
 do_release_build(Config, RelCoolFile) ->
     LibDirs = rebar_config:get_list(Config, relcool_libdirs, []),
     LogLevel = get_log_level(Config),
     OutputDir = rebar_config:get(Config, relcool_output, "rel"),
-    {ok, _} = relcool:do(undefined, undefined, [], LibDirs, LogLevel,
-                         OutputDir, RelCoolFile),
-    ok.
+    case relcool:do(undefined, undefined, [], LibDirs, LogLevel,
+                         OutputDir, RelCoolFile) of
+        {ok, _} ->
+            ok;
+        Error = {error, _} ->
+            rebar_utils:abort("~s", [relcool:format_error(Error)])
+    end.
+
 
 
 get_log_level(Config) ->
