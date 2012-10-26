@@ -16,10 +16,16 @@
 %%% under the License.
 %%%---------------------------------------------------------------------------
 %%% @author Eric Merrit <ericbmerritt@gmail.com>
-%%% @copyright (C) 2012, Eric Merrit
+%%% @copyright (C) Erlware, LLC.
 %%% @doc
 %%%  This provides a trivial way to integrate the relcool release builder into
 %%%  rebar.
+%%%
+%%%  It has two optional configuration values. Those are
+%%%  1) relcool_libdirs
+%%%  2) relcool_output
+%%%
+%%%  These have sane defaults but can be specified by the user.
 -module(rebar_relcool_plugin).
 
 -export([release/2]).
@@ -27,6 +33,7 @@
 %%============================================================================
 %% API
 %%============================================================================
+-spec release/2 :: (term(), file:path()) -> ok.
 release(Config, _AppFile) ->
     case new_enough_rebar() of
         true ->
@@ -38,10 +45,12 @@ release(Config, _AppFile) ->
 %%============================================================================
 %% Internal Functions
 %%============================================================================
+-spec new_enough_rebar() -> boolean().
 new_enough_rebar() ->
     Exports = rebar_utils:module_info(exports),
     lists:member({processing_base_dir, 1}, Exports).
 
+-spec run_on_base_dir(term()) -> ok.
 run_on_base_dir(Config) ->
     case rebar_utils:processing_base_dir(Config) of
         true ->
@@ -50,6 +59,7 @@ run_on_base_dir(Config) ->
             ok
    end.
 
+-spec check_for_relcool_config(term()) -> ok.
 check_for_relcool_config(Config) ->
     CurDir = filename:absname(rebar_utils:get_cwd()),
     RelCoolFile = filename:join(CurDir, "relcool.config"),
@@ -60,6 +70,7 @@ check_for_relcool_config(Config) ->
             ok
     end.
 
+-spec do_release_build(term(), file:path()) -> ok.
 do_release_build(Config, RelCoolFile) ->
     LibDirs = rebar_config:get_list(Config, relcool_libdirs, []),
     LogLevel = get_log_level(Config),
@@ -72,8 +83,7 @@ do_release_build(Config, RelCoolFile) ->
             rebar_utils:abort("~s", [relcool:format_error(Error)])
     end.
 
-
-
+-spec get_log_level(term()) -> non_neg_integer().
 get_log_level(Config) ->
     Verbosity = rebar_config:get_global(Config, verbose, rebar_log:default_level()),
     case Verbosity of
