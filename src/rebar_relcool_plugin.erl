@@ -33,7 +33,7 @@
 %%============================================================================
 %% API
 %%============================================================================
--spec release/2 :: (term(), file:path()) -> ok.
+-spec release/2 :: (term(), file:path()) -> ok | no_return().
 release(Config, _AppFile) ->
     case new_enough_rebar() of
         true ->
@@ -50,7 +50,7 @@ new_enough_rebar() ->
     Exports = rebar_utils:module_info(exports),
     lists:member({processing_base_dir, 1}, Exports).
 
--spec run_on_base_dir(term()) -> ok.
+-spec run_on_base_dir(term()) -> ok | no_return().
 run_on_base_dir(Config) ->
     case rebar_utils:processing_base_dir(Config) of
         true ->
@@ -59,7 +59,7 @@ run_on_base_dir(Config) ->
             ok
    end.
 
--spec check_for_relcool_config(term()) -> ok.
+-spec check_for_relcool_config(term()) -> ok | no_return().
 check_for_relcool_config(Config) ->
     CurDir = filename:absname(rebar_utils:get_cwd()),
     RelCoolFile = filename:join(CurDir, "relcool.config"),
@@ -70,7 +70,7 @@ check_for_relcool_config(Config) ->
             ok
     end.
 
--spec do_release_build(term(), file:path()) -> ok.
+-spec do_release_build(term(), file:path()) -> ok | no_return().
 do_release_build(Config, RelCoolFile) ->
     LibDirs = rebar_config:get_list(Config, relcool_libdirs, []),
     LogLevel = get_log_level(Config),
