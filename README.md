@@ -1,4 +1,4 @@
-rebar_relcool_plugin
+rebar_relx_plugin
 ====================
 
-A plugin for the relcool release system
+A plugin for the relx release system
