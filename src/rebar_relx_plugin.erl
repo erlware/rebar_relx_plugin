@@ -1,3 +1,4 @@
+
 %%% -*- mode: Erlang; fill-column: 80; comment-column: 75; -*-
 %%% Copyright 2012 Erlware, LLC. All Rights Reserved.
 %%%
@@ -18,15 +19,15 @@
 %%% @author Eric Merrit <ericbmerritt@gmail.com>
 %%% @copyright (C) Erlware, LLC.
 %%% @doc
-%%%  This provides a trivial way to integrate the relcool release builder into
+%%%  This provides a trivial way to integrate the relx release builder into
 %%%  rebar.
 %%%
 %%%  It has two optional configuration values. Those are
-%%%  1) relcool_libdirs
-%%%  2) relcool_output
+%%%  1) relx_libdirs
+%%%  2) relx_output
 %%%
 %%%  These have sane defaults but can be specified by the user.
--module(rebar_relcool_plugin).
+-module(rebar_relx_plugin).
 
 -export([release/2]).
 
@@ -39,7 +40,7 @@ release(Config, _AppFile) ->
         true ->
             run_on_base_dir(Config);
         false ->
-            rebar_utils:abort("Rebar version is to old to run the relcool plugin", [])
+            rebar_utils:abort("Rebar version is to old to run the relx plugin", [])
     end.
 
 %%============================================================================
@@ -54,33 +55,36 @@ new_enough_rebar() ->
 run_on_base_dir(Config) ->
     case rebar_utils:processing_base_dir(Config) of
         true ->
-            check_for_relcool_config(Config);
+            check_for_relx_config(Config);
         false ->
             ok
    end.
 
--spec check_for_relcool_config(term()) -> ok | no_return().
-check_for_relcool_config(Config) ->
+-spec check_for_relx_config(term()) -> ok | no_return().
+check_for_relx_config(Config) ->
     CurDir = filename:absname(rebar_utils:get_cwd()),
-    RelCoolFile = filename:join(CurDir, "relcool.config"),
-    case filelib:is_regular(RelCoolFile) of
+    RelxFile = filename:join(CurDir, "relx.config"),
+    case filelib:is_regular(RelxFile) of
         true ->
-            do_release_build(Config, RelCoolFile);
+            do_release_build(Config, RelxFile);
         false ->
             ok
     end.
 
 -spec do_release_build(term(), file:path()) -> ok | no_return().
-do_release_build(Config, RelCoolFile) ->
-    LibDirs = rebar_config:get_list(Config, relcool_libdirs, []),
+do_release_build(Config, RelxFile) ->
+    LibDirs = rebar_config:get_list(Config, relx_libdirs, []),
     LogLevel = get_log_level(Config),
-    OutputDir = rebar_config:get(Config, relcool_output, "rel"),
-    case relcool:do(undefined, undefined, [], LibDirs, LogLevel,
-                         OutputDir, RelCoolFile) of
+    OutputDir = rebar_config:get(Config, relx_output, "rel"),
+    case relx:do([{lib_dirs, LibDirs},
+                 {log_level, LogLevel},
+                 {output_dir, OutputDir},
+                 {config, RelxFile}],
+                 ["release"]) of
         {ok, _} ->
             ok;
         Error = {error, _} ->
-            rebar_utils:abort("~s", [relcool:format_error(Error)])
+            rebar_utils:abort("~s", [relx:format_error(Error)])
     end.
 
 -spec get_log_level(term()) -> non_neg_integer().

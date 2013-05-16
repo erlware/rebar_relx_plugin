@@ -18,8 +18,8 @@
 %% under the License.
 %%
 
-{application, rebar_relcool_plugin,
- [{description, "Correct version manipulation for rebar"},
+{application, rebar_relx_plugin,
+ [{description, "Release creation for rebar"},
   {vsn, "semver"},
   {modules, []},
   {registered, []},
