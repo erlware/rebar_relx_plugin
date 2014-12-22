@@ -75,7 +75,7 @@ check_for_relx_config(Config) ->
 do_release_build(Config, RelxFile) ->
     LibDirs = rebar_config:get_list(Config, relx_libdirs, []),
     LogLevel = get_log_level(Config),
-    OutputDir = rebar_config:get(Config, relx_output, "rel"),
+    OutputDir = rebar_config:get(Config, relx_output, "_rel"),
     case relx:do([{lib_dirs, LibDirs},
                  {log_level, LogLevel},
                  {output_dir, OutputDir},
